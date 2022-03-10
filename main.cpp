@@ -12,7 +12,7 @@ class Multime
         {
             nr_el=a;
         }
-        int get_nr()
+        int get_nr() const
         {
             return nr_el;
         }
@@ -24,7 +24,7 @@ class Multime
                 lista.push_back(i);
             }
         }
-        list<int> get_lst()
+        list<int> get_lst() const
         {
           return lista;
         }
