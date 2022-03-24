@@ -4,114 +4,120 @@
 using namespace std;
 class Multime
 {
-    private:
-        list<int> lista;
-        int nr_el;
-    public:
-        void set_nr(int a)
+private:
+    list<int> lista;
+    int nr_el;
+public:
+    void set_nr(int a)
+    {
+        nr_el=a;
+    }
+    int get_nr() const
+    {
+        return nr_el;
+    }
+    void set_lst(const list<int> &lista_)
+    {
+        lista.clear();
+        for (auto const &i: lista_)
         {
-            nr_el=a;
+            lista.push_back(i);
         }
-        int get_nr() const
+    }
+    list<int> get_lst() const
+    {
+        return lista;
+    }
+    Multime()
+    {
+        nr_el=0;
+    }
+    Multime(int nr_elem, const list<int> &lista_)
+    {
+        nr_el=nr_elem;
+        for (auto const &i: lista_)
         {
-            return nr_el;
+            lista.push_back(i);
         }
-        void set_lst(list<int> lista_)
+    }
+    Multime(const Multime &mult)
+    {
+        nr_el=mult.nr_el;
+        for (auto const &i: mult.lista)
         {
-            lista.clear();
-            for (auto const &i: lista_)
-            {
-                lista.push_back(i);
-            }
+            lista.push_back(i);
         }
-        list<int> get_lst() const
-        {
-          return lista;
-        }
-        Multime(int nr_elem, list<int> lista_)
-        {
-            nr_el=nr_elem;
-                for (auto const &i: lista_)
-            {
-                lista.push_back(i);
-            }
-        }
-        Multime(const Multime &mult)
-        {
-            nr_el=mult.nr_el;
-                for (auto const &i: mult.lista)
-                {
-                    lista.push_back(i);
-                }
-        }
-        Multime& operator=(const Multime &rhs)
-        {
-            set_lst(rhs.lista);
-            this->nr_el=rhs.nr_el;
-        }
-        ~Multime()
-        {
-            lista.clear();
-        }
-        friend istream &operator>>(istream &input, Multime &m);
-        friend ostream &operator<<(ostream &output, const Multime m);
+    }
+    Multime& operator=(const Multime &rhs)
+    {
+        set_lst(rhs.lista);
+        this->nr_el=rhs.nr_el;
 
-        void unicitate()
-        {
-            lista.sort();
-            lista.unique();
-            nr_el=lista.size();
-        }
+        return *this;
+    }
+    ~Multime()
+    {
+        lista.clear();
+    }
+    friend istream &operator>>(istream &input, Multime &m);
+    friend ostream &operator<<(ostream &output,const Multime &m);
 
-        Multime operator+(const Multime &m)
+    void unicitate()
+    {
+        lista.sort();
+        lista.unique();
+        nr_el=lista.size();
+    }
+
+    Multime operator+(const Multime &m) const
+    {
+        Multime c(0,{});
+        for (auto const &i: m.lista)
         {
-            Multime c(0,{});
-            for (auto const &i: m.lista)
+            c.lista.push_back(i);
+        }
+        for (auto const &j: this->lista)
+        {
+            c.lista.push_back(j);
+        }
+        c.unicitate();
+        return c;
+    }
+
+    Multime operator-(const Multime &m) const
+    {
+        Multime c(0,{});
+        for (auto const &i: this->lista)
+        {
+            bool avem = false;
+            for (auto const &j: m.lista)
+            {
+                if(i==j)
+                    avem = true;
+            }
+            if(avem == false)
+                c.lista.push_back(i);
+        }
+        c.unicitate();
+        return c;
+    }
+    Multime operator*(const Multime &m) const
+    {
+        Multime c(0,{});
+        for (auto const &i: this->lista)
+        {
+            for (auto const &j: m.lista)
+            {
+                if(i==j)
                 {
                     c.lista.push_back(i);
+                    break;
                 }
-            for (auto const &j: this->lista)
-                {
-                    c.lista.push_back(j);
-                }
-            c.unicitate();
-            return c;
+            }
         }
-
-        Multime operator-(const Multime &m)
-        {
-            Multime c(0,{});
-            for (auto const &i: this->lista)
-                {
-                    bool avem = false;
-                    for (auto const &j: m.lista)
-                    {
-                        if(i==j)
-                            avem = true;
-                    }
-                    if(avem == false)
-                        c.lista.push_back(i);
-                }
-            c.unicitate();
-            return c;
-        }
-        Multime operator*(const Multime &m)
-        {
-            Multime c(0,{});
-            for (auto const &i: this->lista)
-                {
-                    for (auto const &j: m.lista)
-                    {
-                        if(i==j)
-                            {
-                                c.lista.push_back(i);
-                                break;
-                            }
-                    }
-                }
-            c.unicitate();
-            return c;
-        }
+        c.unicitate();
+        return c;
+    }
 };
 
 istream &operator>>(istream &is, Multime &m)
@@ -127,19 +133,19 @@ istream &operator>>(istream &is, Multime &m)
     }
     return is;
 }
-ostream &operator<<(ostream &os, Multime m)
+ostream &operator<<(ostream &os,const Multime &m)
 {
     int nr_elem,ok=0;
     nr_elem=m.get_nr();
     os<<"Multimea: {";
     for (auto const &i: m.lista)
-        {
-            if(ok==0)
-                ok=1;
-            else
-                os<<", ";
-            os << i ;
-        }
+    {
+        if(ok==0)
+            ok=1;
+        else
+            os<<", ";
+        os << i ;
+    }
     os<<"} are "<<nr_elem<<" elemente.";
     return os;
 }
