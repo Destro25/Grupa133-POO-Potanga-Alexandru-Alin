@@ -100,6 +100,8 @@ public:
         credit = credit - creditextras;
     }
 
+    Card_credit &operator=(const Card_credit &rhs) = default;
+
     virtual string showstatus() const = 0; //metoda virtuala pura
 
     virtual void afisare(ostream &os) const
@@ -368,7 +370,7 @@ vector <shared_ptr<Card_credit>> Bank::cards;
 
 int main()
 {
-    string s;
+    /*string s;
     bool ok = true;
     double money;
     string comanda;
@@ -443,5 +445,15 @@ int main()
         else
             cout << "What else can we do for you?\n";
     }
+    */
+
+    Card_standard cards1,cards2;
+    cin >> cards1 >> cards2;
+
+    cout<<cards1<<cards2;
+
+    cards1 = cards2;
+    cout<<cards1<<cards2;
+
     return 0;
 }
