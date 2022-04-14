@@ -101,11 +101,11 @@ public:
 
     virtual void afisare(ostream &os) const
     {
-        os << showstatus() << " Card user: " << nume_detinator << ". Your card number is " << nr_card <<" and it will expire on " << data_expirare << ". Your CVV is "  << CVV << " ";
+        os << showstatus() << " Card user: " << nume_detinator << ". Your card number is " << nr_card <<" and it will expire on " << data_expirare << ". Your CVV is "  << CVV;
         if(credit < 0)
-            os << "You owe " << -credit << " Dogecoin.";
+            os << ". You owe " << -credit << " Dogecoin.";
         else
-            os << "you have " << credit <<" Dogecoin.";
+            os << ". You have " << credit <<" Dogecoin.";
     }
 
     virtual void citire(istream &is)
@@ -216,10 +216,9 @@ public:
         }
     }
 
-    Card_standard() : Card_credit()
+    Card_standard() : Card_credit(), limitaExtragere(0), comisionDepasireLimita(0)
     {
-        limitaExtragere = 0;
-        comisionDepasireLimita = 0;
+
     }
     Card_standard(const Card_standard &card) : Card_credit(card.getCard(), card.getDet(), card.getExp(), card.getCVV(), card.getcredit()), limitaExtragere(card.limitaExtragere), comisionDepasireLimita(card.comisionDepasireLimita){}
 
@@ -291,9 +290,9 @@ public:
         setCredit(backinthepocket);
     }
 
-    Card_premium() : Card_credit()
+    Card_premium() : Card_credit(), cashback(0)
     {
-        cashback = 0;
+
     }
     Card_premium(const Card_premium &card) : Card_credit(card.getCard(), card.getDet(), card.getExp(), card.getCVV(), card.getcredit()), cashback(card.cashback){}
 
@@ -367,7 +366,7 @@ vector <shared_ptr<Card_credit>> Bank::cards;
 int main()
 {
     string s;
-    bool ok = true, ok2 = true;
+    bool ok = true, ok2 = true, ok3 = true;
     double money;
     string comanda;
     cout << "Welcome to the Bank! What would you like to do? If you need help, please type HELP. \n";
@@ -376,7 +375,7 @@ int main()
         getline(cin>>ws, comanda);
         if(comanda == "HELP")
         {
-            ok2 = true;
+            ok3 = true;
             cout << "The following actions are possible:\n";
             cout << "ADD A CARD. The previous command will make a new card!\n";
             cout << "WITHDRAW. The previous command will withdraw money from a certain card!\n";
@@ -388,12 +387,12 @@ int main()
         }else
         if(comanda == "ADD A CARD")
         {
-            ok2 = true;
+            ok3 = true;
             cout << "Select a card type: PREMIUM/ STANDARD\n";
             cin >> comanda;
             if(comanda == "PREMIUM")
             {
-                ok2 = true;
+                ok3 = true;
                 Card_premium card;
                 try
                 {
@@ -409,7 +408,7 @@ int main()
             else
             if(comanda == "STANDARD")
             {
-                ok2 = true;
+                ok3 = true;
                 Card_standard card;
                 try
                 {
@@ -426,7 +425,7 @@ int main()
         else
         if (comanda == "CARD INFO")
         {
-            ok2 = true;
+            ok3 = true;
             cout << "Insert your card number: ";
             cin >> s;
             Bank::printClient(s);
@@ -434,7 +433,7 @@ int main()
         else
         if (comanda == "WITHDRAW")
         {
-            ok2 = true;
+            ok3 = true;
             cout << "\nInsert your card number: ";
             cin >> s;
             cout << "\nInsert the amount you want to extract: ";
@@ -444,41 +443,41 @@ int main()
         else
             if(comanda == "CLIENTS")
             {
-                ok2 = true;
+                ok3 = true;
                 Bank::printAllClients();
             }
             else
                 if(comanda == "PCLIENTS")
                 {
-                    ok2 = true;
+                    ok3 = true;
                     Bank::printPremiumClients();
                 }
                 else
                     if(comanda == "SCLIENTS")
                     {
-                        ok2 = true;
+                        ok3 = true;
                         Bank::printStandardClients();
                     }
                     else
+                    if(comanda == "EXIT")
+                        ok = false;
+                    else
                         {
-                            cout << "One more wrong input will log you out!\n";
+                        if(ok3)
+                        {
+                            cout<<"Unknown command. One more Unknown command will result in loggin out!\n";
+                            ok3 = false;
+                        }
+                        else
                             ok2 = false;
                         }
 
         if(comanda == "EXIT")
             ok = false;
         else
+            if(ok3||ok2)
             cout << "What else can we do for you?\n";
     }
-
-/*
-    Card_standard cards1,cards2;
-    cin >> cards1 >> cards2;
-
-    cout<<cards1<<cards2;
-
-    cards1 = cards2;
-    cout<<cards1<<cards2;
-*/
+    cout << "Have a nice day!\n";
     return 0;
 }
