@@ -33,6 +33,13 @@ public:
         return "Insuficient Funds!\n";
     }
 };
+class MaximumCreditReached : public exception{
+public:
+    MaximumCreditReached() = default;
+    const char *what() const noexcept override{
+        return "Maximum Credit Reached!\n";
+    }
+};
 enum class Card_creditType{
     Card_standard,
     Card_premium
@@ -131,14 +138,35 @@ public:
 
     virtual void Withdraw(const double &creditextras)
     {
-        if(getType() == Card_creditType::Card_standard && credit - creditextras < -10000)
-            credit = credit - creditextras;
-        else throw InsuficientFunds();
-        if(getType() == Card_creditType::Card_premium && credit - creditextras < -50000)
-            credit = credit - creditextras;
-        else throw InsuficientFunds();
+        if(getType() == Card_creditType::Card_standard)
+        {
+            if(credit - creditextras > -10000)
+                credit = credit - creditextras;
+            else throw InsuficientFunds();
+        }
+        else
+        {
+            if(credit - creditextras > -50000)
+                credit = credit - creditextras;
+            else throw InsuficientFunds();
+        }
     }
 
+    void AddMoney(const double &creditadaugat)
+    {
+        if(getType() == Card_creditType::Card_standard)
+        {
+            if(credit + creditadaugat < 10000)
+                credit = credit + creditadaugat;
+            else throw MaximumCreditReached();
+        }
+        else
+        {
+            if(credit + creditadaugat < 50000)
+                credit = credit + creditadaugat;
+            else throw MaximumCreditReached();
+        }
+    }
     Card_credit &operator=(const Card_credit &rhs) = default;
 
     virtual string showstatus() const = 0; //metoda virtuala pura
@@ -426,6 +454,15 @@ public:
                 break;
             }
     }
+    static void addMoney(const string& s, const double &sum)
+    {
+        for (auto &card: cards)
+            if(card->getCard() == s)
+            {
+                card->AddMoney(sum);
+                break;
+            }
+    }
 };
 
 vector <shared_ptr<Card_credit>> Bank::cards;
@@ -446,6 +483,7 @@ int main()
             cout << "The following actions are possible:\n";
             cout << "ADD A CARD. The previous command will make a new card!\n";
             cout << "WITHDRAW. The previous command will withdraw money from a certain card!\n";
+            cout << "ADD MONEY. The previous command will add money to a certain card!\n";
             cout << "CARD INFO. The previous command will show all the card details!\n";
             cout << "CLIENTS. The previous command will show all clients!\n";
             cout << "PCLIENTS. The previous command will show all premium clients and their cashbacks!\n";
@@ -527,6 +565,23 @@ int main()
             }
         }
         else
+            if(comanda == "ADD MONEY")
+            {
+                ok3 = true;
+                cout << "\nInsert your card number: ";
+                cin >> s;
+                cout << "\nInsert the amount you want to add: ";
+                cin >> money;
+                try
+                {
+                    Bank::addMoney(s,money);
+                }
+                catch (const MaximumCreditReached &e)
+                {
+                    cout << e.what();
+                }
+            }
+            else
         if(comanda == "CLIENTS")
         {
             ok3 = true;
