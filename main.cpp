@@ -371,15 +371,16 @@ vector <shared_ptr<Card_credit>> Bank::cards;
 int main()
 {
     string s;
-    bool ok = true;
+    bool ok = true, ok2 = true;
     double money;
     string comanda;
     cout << "Welcome to the Bank! What would you like to do? If you need help, please type HELP. \n";
-    while(ok)
+    while(ok && ok2)
     {
         getline(cin>>ws, comanda);
         if(comanda == "HELP")
         {
+            ok2 = true;
             cout << "The following actions are possible:\n";
             cout << "ADD A CARD. The previous command will make a new card!\n";
             cout << "WITHDRAW. The previous command will withdraw money from a certain card!\n";
@@ -391,10 +392,12 @@ int main()
         }else
         if(comanda == "ADD A CARD")
         {
+            ok2 = true;
             cout << "Select a card type: PREMIUM/ STANDARD\n";
             cin >> comanda;
             if(comanda == "PREMIUM")
             {
+                ok2 = true;
                 Card_premium card;
                 cin >> card;
                 auto add = make_shared<Card_premium>(card);
@@ -403,6 +406,7 @@ int main()
             else
             if(comanda == "STANDARD")
             {
+                ok2 = true;
                 Card_standard card;
                 cin >> card;
                 auto add = make_shared<Card_standard>(card);
@@ -412,6 +416,7 @@ int main()
         else
         if (comanda == "CARD INFO")
         {
+            ok2 = true;
             cout << "Insert your card number: ";
             cin >> s;
             Bank::printClient(s);
@@ -419,6 +424,7 @@ int main()
         else
         if (comanda == "WITHDRAW")
         {
+            ok2 = true;
             cout << "\nInsert your card number: ";
             cin >> s;
             cout << "\nInsert the amount you want to extract: ";
@@ -428,25 +434,33 @@ int main()
         else
             if(comanda == "CLIENTS")
             {
+                ok2 = true;
                 Bank::printAllClients();
             }
             else
                 if(comanda == "PCLIENTS")
                 {
+                    ok2 = true;
                     Bank::printPremiumClients();
                 }
                 else
                     if(comanda == "SCLIENTS")
                     {
+                        ok2 = true;
                         Bank::printStandardClients();
                     }
-        if(comanda == "EXIT")
-            ok = false;
-        else
-            cout << "What else can we do for you?\n";
+                    else
+                        {
+                            cout << "One more wrong input will log you out!\n";
+                            ok2 = false;
+                        }
+                    if(comanda == "EXIT")
+                        ok = false;
+                    else
+                        cout << "What else can we do for you?\n";
     }
-    /*
 
+/*
     Card_standard cards1,cards2;
     cin >> cards1 >> cards2;
 
@@ -454,6 +468,6 @@ int main()
 
     cards1 = cards2;
     cout<<cards1<<cards2;
-    */
+*/
     return 0;
 }
