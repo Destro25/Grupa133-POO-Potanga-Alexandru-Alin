@@ -37,14 +37,9 @@ public:
         if(CVV < 100 || CVV > 999)
             throw InvalidCVV();
     }
-    Card_credit(const Card_credit& card)
+    Card_credit(const Card_credit& card): nr_card(card.nr_card), nume_detinator(card.nume_detinator), data_expirare(card.data_expirare), CVV(card.CVV), credit(card.credit)
     {
-        nr_card = card.nr_card;
-        nume_detinator = card.nume_detinator;
-        data_expirare = card.data_expirare;
 
-        CVV = card.CVV;
-        credit = card.credit;
     }
     virtual ~Card_credit() = default; // intotdeauna destr virtual in clasele din care se mosteneste
 
