@@ -370,7 +370,7 @@ vector <shared_ptr<Card_credit>> Bank::cards;
 
 int main()
 {
-    /*string s;
+    string s;
     bool ok = true;
     double money;
     string comanda;
@@ -445,7 +445,7 @@ int main()
         else
             cout << "What else can we do for you?\n";
     }
-    */
+    /*
 
     Card_standard cards1,cards2;
     cin >> cards1 >> cards2;
@@ -454,6 +454,6 @@ int main()
 
     cards1 = cards2;
     cout<<cards1<<cards2;
-
+    */
     return 0;
 }
