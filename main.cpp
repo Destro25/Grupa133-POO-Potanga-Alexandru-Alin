@@ -19,6 +19,13 @@ public:
         return "Invalid Date!\n";
     }
 };
+class InvalidCredit : public exception{
+public:
+    InvalidCredit() = default;
+    const char *what() const noexcept override{
+        return "Invalid Credit!\n";
+    }
+};
 enum class Card_creditType{
     Card_standard,
     Card_premium
@@ -58,6 +65,8 @@ public:
             if(data_expirare[0] == '3' && data_expirare[1] != '0')
                 throw InvalidDate();
             //toate lunile din anul meu au 30 de zile
+        if(credit < 0)
+            throw InvalidCredit();
         }
     }
     Card_credit(const Card_credit& card): nr_card(card.nr_card), nume_detinator(card.nume_detinator), data_expirare(card.data_expirare), CVV(card.CVV), credit(card.credit)
@@ -127,8 +136,8 @@ public:
         os << showstatus() << " Card user: " << nume_detinator << ". Your card number is " << nr_card <<" and it will expire on " << data_expirare << ". Your CVV is ";
         if(CVV < 10) cout << "00" << CVV;
         else
-            if(CVV < 100) cout << "0" << CVV;
-            else cout << CVV;
+        if(CVV < 100) cout << "0" << CVV;
+        else cout << CVV;
         if(credit < 0)
             os << ". You owe " << -credit << " Dogecoin.";
         else
@@ -166,6 +175,8 @@ public:
             throw InvalidCVV();
         cout << "\nInsert your credit: ";
         is >> credit;
+        if(credit < 0)
+            throw InvalidCredit();
     }
     friend istream &operator>>(istream &is, Card_credit &card)
     {
@@ -452,6 +463,10 @@ int main()
                 {
                     cout << e.what();
                 }
+                catch (const InvalidCredit &e)
+                {
+                    cout << e.what();
+                }
             }
             else
             if(comanda == "STANDARD")
@@ -493,41 +508,41 @@ int main()
             Bank::withdrawClient(s,money);
         }
         else
-            if(comanda == "CLIENTS")
+        if(comanda == "CLIENTS")
+        {
+            ok3 = true;
+            Bank::printAllClients();
+        }
+        else
+        if(comanda == "PCLIENTS")
+        {
+            ok3 = true;
+            Bank::printPremiumClients();
+        }
+        else
+        if(comanda == "SCLIENTS")
+        {
+            ok3 = true;
+            Bank::printStandardClients();
+        }
+        else
+        if(comanda == "EXIT")
+            ok = false;
+        else
+        {
+            if(ok3)
             {
-                ok3 = true;
-                Bank::printAllClients();
+                cout<<"Unknown command. One more Unknown command will result in loggin out!\n";
+                ok3 = false;
             }
             else
-                if(comanda == "PCLIENTS")
-                {
-                    ok3 = true;
-                    Bank::printPremiumClients();
-                }
-                else
-                    if(comanda == "SCLIENTS")
-                    {
-                        ok3 = true;
-                        Bank::printStandardClients();
-                    }
-                    else
-                    if(comanda == "EXIT")
-                        ok = false;
-                    else
-                        {
-                        if(ok3)
-                        {
-                            cout<<"Unknown command. One more Unknown command will result in loggin out!\n";
-                            ok3 = false;
-                        }
-                        else
-                            ok2 = false;
-                        }
+                ok2 = false;
+        }
 
         if(comanda == "EXIT")
             ok = false;
         else
-            if(ok3||ok2)
+        if(ok3||ok2)
             cout << "What else can we do for you?\n";
     }
     cout << "Have a nice day!\n";
