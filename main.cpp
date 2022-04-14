@@ -27,14 +27,9 @@ class Card_credit
     int CVV;
     double credit;
 public:
-    Card_credit()
+    Card_credit() : nr_card(), nume_detinator(), data_expirare(), CVV(0), credit(0)
     {
-        nr_card = "";
-        nume_detinator = "";
-        data_expirare = "";
 
-        CVV = 0;
-        credit = 0;
     }
 
     Card_credit(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit) : nr_card(move(newcard)), nume_detinator(move(newdet)), data_expirare(move(newexp)), CVV(newCVV), credit(newCredit)
