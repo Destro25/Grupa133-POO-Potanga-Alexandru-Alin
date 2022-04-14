@@ -454,10 +454,11 @@ int main()
                             cout << "One more wrong input will log you out!\n";
                             ok2 = false;
                         }
-                    if(comanda == "EXIT")
-                        ok = false;
-                    else
-                        cout << "What else can we do for you?\n";
+
+        if(comanda == "EXIT")
+            ok = false;
+        else
+            cout << "What else can we do for you?\n";
     }
 
 /*
