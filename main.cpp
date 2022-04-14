@@ -12,7 +12,13 @@ public:
         return "Invalid CVV!\n";
     }
 };
-
+class InvalidDate : public exception{
+public:
+    InvalidDate() = default;
+    const char *what() const noexcept override{
+        return "Invalid Date!\n";
+    }
+};
 enum class Card_creditType{
     Card_standard,
     Card_premium
@@ -34,8 +40,25 @@ public:
 
     Card_credit(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit) : nr_card(move(newcard)), nume_detinator(move(newdet)), data_expirare(move(newexp)), CVV(newCVV), credit(newCredit)
     {
-        if(CVV < 100 || CVV > 999)
+        if(CVV < 0 || CVV > 999)
             throw InvalidCVV();
+        if(data_expirare[2] != '/' || data_expirare[5] != '/' || data_expirare[6] < '0' || data_expirare[6] > '9'|| data_expirare[7] < '0' || data_expirare[7] > '9'|| data_expirare[3] < '0' || data_expirare[3] > '9'|| data_expirare[4] < '0' || data_expirare[4] > '9'|| data_expirare[0] < '0' || data_expirare[0] > '9'|| data_expirare[1] < '0' || data_expirare[1] > '9')
+            throw InvalidDate();
+        else
+        {
+            if(data_expirare[3]=='1' && data_expirare[4] > '2')
+                throw InvalidDate();
+            else
+            if(data_expirare[3] != '1' && data_expirare[3] != '0')
+                throw InvalidDate();
+
+            if(data_expirare[0] > '3')
+                throw InvalidDate();
+            else
+            if(data_expirare[0] == '3' && data_expirare[1] != '0')
+                throw InvalidDate();
+            //toate lunile din anul meu au 30 de zile
+        }
     }
     Card_credit(const Card_credit& card): nr_card(card.nr_card), nume_detinator(card.nume_detinator), data_expirare(card.data_expirare), CVV(card.CVV), credit(card.credit)
     {
@@ -101,7 +124,11 @@ public:
 
     virtual void afisare(ostream &os) const
     {
-        os << showstatus() << " Card user: " << nume_detinator << ". Your card number is " << nr_card <<" and it will expire on " << data_expirare << ". Your CVV is "  << CVV;
+        os << showstatus() << " Card user: " << nume_detinator << ". Your card number is " << nr_card <<" and it will expire on " << data_expirare << ". Your CVV is ";
+        if(CVV < 10) cout << "00" << CVV;
+        else
+            if(CVV < 100) cout << "0" << CVV;
+            else cout << CVV;
         if(credit < 0)
             os << ". You owe " << -credit << " Dogecoin.";
         else
@@ -116,9 +143,26 @@ public:
         is >> nr_card;
         cout << "\nInsert your expiration date(Format: dd/mm/yy): ";
         is >> data_expirare;
+        if(data_expirare[2] != '/' || data_expirare[5] != '/' || data_expirare[6] < '0' || data_expirare[6] > '9'|| data_expirare[7] < '0' || data_expirare[7] > '9'|| data_expirare[3] < '0' || data_expirare[3] > '9'|| data_expirare[4] < '0' || data_expirare[4] > '9'|| data_expirare[0] < '0' || data_expirare[0] > '9'|| data_expirare[1] < '0' || data_expirare[1] > '9')
+            throw InvalidDate();
+        else
+        {
+            if(data_expirare[3]=='1' && data_expirare[4] > '2')
+                throw InvalidDate();
+            else
+            if(data_expirare[3] != '1' && data_expirare[3] != '0')
+                throw InvalidDate();
+
+            if(data_expirare[0] > '3')
+                throw InvalidDate();
+            else
+            if(data_expirare[0] == '3' && data_expirare[1] != '0')
+                throw InvalidDate();
+            //toate lunile din anul meu au 30 de zile
+        }
         cout << "\nInsert your CVV: ";
         is >> CVV;
-        if(CVV < 100 || CVV > 999)
+        if(CVV < 0 || CVV > 999)
             throw InvalidCVV();
         cout << "\nInsert your credit: ";
         is >> credit;
@@ -404,6 +448,10 @@ int main()
                 {
                     cout<< e.what();
                 }
+                catch (const InvalidDate &e)
+                {
+                    cout << e.what();
+                }
             }
             else
             if(comanda == "STANDARD")
@@ -418,7 +466,11 @@ int main()
                 }
                 catch (const InvalidCVV &e)
                 {
-                    cout<< e.what();
+                    cout << e.what();
+                }
+                catch (const InvalidDate &e)
+                {
+                    cout << e.what();
                 }
             }
         }
