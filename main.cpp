@@ -26,6 +26,13 @@ public:
         return "Invalid Credit!\n";
     }
 };
+class InsuficientFunds : public exception{
+public:
+    InsuficientFunds() = default;
+    const char *what() const noexcept override{
+        return "Insuficient Funds!\n";
+    }
+};
 enum class Card_creditType{
     Card_standard,
     Card_premium
@@ -124,7 +131,12 @@ public:
 
     virtual void Withdraw(const double &creditextras)
     {
-        credit = credit - creditextras;
+        if(getType() == Card_creditType::Card_standard && credit - creditextras < -10000)
+            credit = credit - creditextras;
+        else throw InsuficientFunds();
+        if(getType() == Card_creditType::Card_premium && credit - creditextras < -50000)
+            credit = credit - creditextras;
+        else throw InsuficientFunds();
     }
 
     Card_credit &operator=(const Card_credit &rhs) = default;
@@ -505,7 +517,14 @@ int main()
             cin >> s;
             cout << "\nInsert the amount you want to extract: ";
             cin >> money;
-            Bank::withdrawClient(s,money);
+            try
+            {
+                Bank::withdrawClient(s,money);
+            }
+            catch (const InsuficientFunds &e)
+            {
+                cout << e.what();
+            }
         }
         else
         if(comanda == "CLIENTS")
