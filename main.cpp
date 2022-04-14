@@ -5,6 +5,14 @@
 #include <memory>
 using namespace std;
 
+class InvalidCVV : public exception{
+public:
+    InvalidCVV() = default;
+    const char *what() const noexcept override{
+        return "Invalid CVV!\n";
+    }
+};
+
 enum class Card_creditType{
     Card_standard,
     Card_premium
@@ -28,14 +36,11 @@ public:
         CVV = 0;
         credit = 0;
     }
-    Card_credit(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit)
-    {
-        nr_card = move(newcard);
-        nume_detinator = move(newdet);
-        data_expirare = move(newexp);
 
-        CVV = newCVV;
-        credit = newCredit;
+    Card_credit(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit) : nr_card(move(newcard)), nume_detinator(move(newdet)), data_expirare(move(newexp)), CVV(newCVV), credit(newCredit)
+    {
+        if(CVV < 100 || CVV > 999)
+            throw InvalidCVV();
     }
     Card_credit(const Card_credit& card)
     {
@@ -119,10 +124,12 @@ public:
         getline(is>>ws, nume_detinator);
         cout << "\nInsert a card number: ";
         is >> nr_card;
-        cout << "\nInsert your expiration date: ";
+        cout << "\nInsert your expiration date(Format: dd/mm/yy): ";
         is >> data_expirare;
         cout << "\nInsert your CVV: ";
         is >> CVV;
+        if(CVV < 100 || CVV > 999)
+            throw InvalidCVV();
         cout << "\nInsert your credit: ";
         is >> credit;
     }
@@ -145,10 +152,9 @@ class Card_standard : public Card_credit
     double comisionDepasireLimita;
 public:
     Card_standard(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit, const int &newlimitaExtragere, const double &newcomisionDepasireLimita)
-            : Card_credit(move(newcard), move(newdet), move(newexp), newCVV, newCredit)
+            : Card_credit(move(newcard), move(newdet), move(newexp), newCVV, newCredit), limitaExtragere(newlimitaExtragere), comisionDepasireLimita(newcomisionDepasireLimita)
     {
-        limitaExtragere = newlimitaExtragere;
-        comisionDepasireLimita = newcomisionDepasireLimita;
+
     }
     Card_creditType getType() const override{
         return Card_creditType::Card_standard;
@@ -243,9 +249,9 @@ class Card_premium : public Card_credit
     double cashback;
 public:
     Card_premium(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit, const double &newcashback)
-            : Card_credit(move(newcard), move(newdet), move(newexp), newCVV, newCredit)
+            : Card_credit(move(newcard), move(newdet), move(newexp), newCVV, newCredit), cashback(newcashback)
     {
-        cashback = newcashback;
+
     }
     Card_creditType getType() const override{
         return Card_creditType::Card_premium;
@@ -399,18 +405,32 @@ int main()
             {
                 ok2 = true;
                 Card_premium card;
-                cin >> card;
-                auto add = make_shared<Card_premium>(card);
-                Bank::addClient(add);
+                try
+                {
+                    cin >> card;
+                    auto add = make_shared<Card_premium>(card);
+                    Bank::addClient(add);
+                }
+                catch (const InvalidCVV &e)
+                {
+                    cout<< e.what();
+                }
             }
             else
             if(comanda == "STANDARD")
             {
                 ok2 = true;
                 Card_standard card;
-                cin >> card;
-                auto add = make_shared<Card_standard>(card);
-                Bank::addClient(add);
+                try
+                {
+                    cin >> card;
+                    auto add = make_shared<Card_standard>(card);
+                    Bank::addClient(add);
+                }
+                catch (const InvalidCVV &e)
+                {
+                    cout<< e.what();
+                }
             }
         }
         else
