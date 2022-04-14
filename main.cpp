@@ -1,207 +1,447 @@
 #include <iostream>
-#include <list>
-#include <cstring>
+#include <string>
+#include <exception>
+#include <vector>
+#include <memory>
 using namespace std;
-class Multime
+
+enum class Card_creditType{
+    Card_standard,
+    Card_premium
+};
+
+class Card_credit
 {
-private:
-    list<int> lista;
-    int nr_el;
+    string nr_card;
+    string nume_detinator;
+    string data_expirare;
+
+    int CVV;
+    double credit;
 public:
-    void set_nr(int a)
+    Card_credit()
     {
-        nr_el=a;
-    }
-    int get_nr() const
-    {
-        return nr_el;
-    }
-    void set_lst(const list<int> &lista_)
-    {
-        lista.clear();
-        for (auto const &i: lista_)
-        {
-            lista.push_back(i);
-        }
-    }
-    list<int> get_lst() const
-    {
-        return lista;
-    }
-    Multime()
-    {
-        nr_el=0;
-    }
-    Multime(int nr_elem, const list<int> &lista_)
-    {
-        nr_el=nr_elem;
-        for (auto const &i: lista_)
-        {
-            lista.push_back(i);
-        }
-    }
-    Multime(const Multime &mult)
-    {
-        nr_el=mult.nr_el;
-        for (auto const &i: mult.lista)
-        {
-            lista.push_back(i);
-        }
-    }
-    Multime& operator=(const Multime &rhs)
-    {
-        set_lst(rhs.lista);
-        this->nr_el=rhs.nr_el;
+        nr_card = "";
+        nume_detinator = "";
+        data_expirare = "";
 
-        return *this;
+        CVV = 0;
+        credit = 0;
     }
-    ~Multime()
+    Card_credit(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit)
     {
-        lista.clear();
-    }
-    friend istream &operator>>(istream &input, Multime &m);
-    friend ostream &operator<<(ostream &output,const Multime &m);
+        nr_card = move(newcard);
+        nume_detinator = move(newdet);
+        data_expirare = move(newexp);
 
-    void unicitate()
+        CVV = newCVV;
+        credit = newCredit;
+    }
+    Card_credit(const Card_credit& card)
     {
-        lista.sort();
-        lista.unique();
-        nr_el=lista.size();
+        nr_card = card.nr_card;
+        nume_detinator = card.nume_detinator;
+        data_expirare = card.data_expirare;
+
+        CVV = card.CVV;
+        credit = card.credit;
+    }
+    virtual ~Card_credit() = default; // intotdeauna destr virtual in clasele din care se mosteneste
+
+    virtual Card_creditType getType() const = 0;
+
+    string getCard() const
+    {
+        return nr_card;
+    }
+    void setCard(string newcard)
+    {
+        nr_card = move(newcard);
     }
 
-    Multime operator+(const Multime &m) const
+    string getDet() const
     {
-        Multime c(0,{});
-        for (auto const &i: m.lista)
-        {
-            c.lista.push_back(i);
-        }
-        for (auto const &j: this->lista)
-        {
-            c.lista.push_back(j);
-        }
-        c.unicitate();
-        return c;
+        return nume_detinator;
+    }
+    void setDet(string newdet)
+    {
+        nume_detinator = move(newdet);
     }
 
-    Multime operator-(const Multime &m) const
+    string getExp() const
     {
-        Multime c(0,{});
-        for (auto const &i: this->lista)
-        {
-            bool avem = false;
-            for (auto const &j: m.lista)
-            {
-                if(i==j)
-                    avem = true;
-            }
-            if(avem == false)
-                c.lista.push_back(i);
-        }
-        c.unicitate();
-        return c;
+        return data_expirare;
     }
-    Multime operator*(const Multime &m) const
+    void setExp(string newexp)
     {
-        Multime c(0,{});
-        for (auto const &i: this->lista)
-        {
-            for (auto const &j: m.lista)
-            {
-                if(i==j)
-                {
-                    c.lista.push_back(i);
-                    break;
-                }
-            }
-        }
-        c.unicitate();
-        return c;
+        data_expirare = move(newexp);
+    }
+
+    int getCVV() const
+    {
+        return CVV;
+    }
+    void setCVV(const int &newCVV)
+    {
+        CVV = newCVV;
+    }
+
+    double getcredit() const
+    {
+        return credit;
+    }
+    void setCredit(const double &newCredit)
+    {
+        credit = newCredit;
+    }
+
+    virtual void Withdraw(const double &creditextras)
+    {
+        credit = credit - creditextras;
+    }
+
+    virtual string showstatus() const = 0; //metoda virtuala pura
+
+    virtual void afisare(ostream &os) const
+    {
+        os << showstatus() << " Card user: " << nume_detinator << ". Your card number is " << nr_card <<" and it will expire on " << data_expirare << ". Your CVV is "  << CVV << " ";
+        if(credit < 0)
+            os << "You owe " << -credit << " Dogecoin.";
+        else
+            os << "you have " << credit <<" Dogecoin.";
+    }
+
+    virtual void citire(istream &is)
+    {
+        cout << "Insert your name: ";
+        getline(is>>ws, nume_detinator);
+        cout << "\nInsert a card number: ";
+        is >> nr_card;
+        cout << "\nInsert your expiration date: ";
+        is >> data_expirare;
+        cout << "\nInsert your CVV: ";
+        is >> CVV;
+        cout << "\nInsert your credit: ";
+        is >> credit;
+    }
+    friend istream &operator>>(istream &is, Card_credit &card)
+    {
+        card.citire(is);
+        return is;
     }
 };
 
-istream &operator>>(istream &is, Multime &m)
+ostream& operator<<(ostream &os, const Card_credit *card)
 {
-    m.lista.clear();
-    int nr_elem,elem;
-    is>>nr_elem;
-    m.set_nr(nr_elem);
-    for(int i=0;i<nr_elem;i++)
-    {
-        is>>elem;
-        m.lista.push_back(elem);
-    }
-    return is;
-}
-ostream &operator<<(ostream &os,const Multime &m)
-{
-    int nr_elem,ok=0;
-    nr_elem=m.get_nr();
-    os<<"Multimea: {";
-    for (auto const &i: m.lista)
-    {
-        if(ok==0)
-            ok=1;
-        else
-            os<<", ";
-        os << i ;
-    }
-    os<<"} are "<<nr_elem<<" elemente.";
+    card->afisare(os);
     return os;
 }
+
+class Card_standard : public Card_credit
+{
+    int limitaExtragere;
+    double comisionDepasireLimita;
+public:
+    Card_standard(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit, const int &newlimitaExtragere, const double &newcomisionDepasireLimita)
+            : Card_credit(move(newcard), move(newdet), move(newexp), newCVV, newCredit)
+    {
+        limitaExtragere = newlimitaExtragere;
+        comisionDepasireLimita = newcomisionDepasireLimita;
+    }
+    Card_creditType getType() const override{
+        return Card_creditType::Card_standard;
+    }
+
+    int getlimitaExtragere() const
+    {
+        return limitaExtragere;
+    }
+    void setlimitaExtragere(const int &newlimitaExtragere)
+    {
+        limitaExtragere = newlimitaExtragere;
+    }
+
+    double getcomisionDepasireLimita() const
+    {
+        return comisionDepasireLimita;
+    }
+    void setcomisionDepasireLimita(const double &newcomisionDepasireLimita)
+    {
+        comisionDepasireLimita = newcomisionDepasireLimita;
+    }
+
+    string showstatus() const override
+    {
+        return "Welcome to Floor Street!(Standard Cards)";
+    }
+
+    void afisare(ostream &os) const override
+    {
+        Card_credit::afisare(os);
+        cout << " You have a debt limit of " << limitaExtragere <<". Your commission rate is " << comisionDepasireLimita <<".\n";
+    }
+
+    friend ostream &operator<<(ostream &os, const Card_standard &card)
+    {
+        card.afisare(os);
+        return os;
+    }
+
+    void citire(istream &is) override
+    {
+        Card_credit::citire(is);
+        cout << "\nInsert your withdraw limit: ";
+        is >> limitaExtragere;
+        cout << "\nInsert withdraw commission: ";
+        is >> comisionDepasireLimita;
+        cout << "\n";
+    }
+
+    friend istream  &operator>>(istream &is, Card_standard &card)
+    {
+        card.citire(is);
+        return is;
+    }
+
+    void Withdraw(const double &creditextras) override
+    {
+        Card_credit::Withdraw(creditextras);
+        if(getcredit() < limitaExtragere)
+        {
+            double datorie = getcredit() - creditextras * comisionDepasireLimita;
+            double diferenta = getcredit() - limitaExtragere;
+            diferenta = diferenta * comisionDepasireLimita + getcredit();
+            if(datorie < diferenta)
+                setCredit(diferenta);
+            else
+                setCredit(datorie);
+        }
+    }
+
+    Card_standard() : Card_credit()
+    {
+        limitaExtragere = 0;
+        comisionDepasireLimita = 0;
+    }
+    Card_standard(const Card_standard &card) : Card_credit(card.getCard(), card.getDet(), card.getExp(), card.getCVV(), card.getcredit()), limitaExtragere(card.limitaExtragere), comisionDepasireLimita(card.comisionDepasireLimita){}
+
+    Card_standard &operator=(const Card_standard &rhs)
+    {
+        if (this != &rhs)
+        {
+            Card_credit::operator=(rhs);
+            limitaExtragere = rhs.limitaExtragere;
+            comisionDepasireLimita = rhs.comisionDepasireLimita;
+        }
+        return *this;
+    }
+};
+class Card_premium : public Card_credit
+{
+    double cashback;
+public:
+    Card_premium(string newcard, string newdet, string newexp, const int &newCVV, const double &newCredit, const double &newcashback)
+            : Card_credit(move(newcard), move(newdet), move(newexp), newCVV, newCredit)
+    {
+        cashback = newcashback;
+    }
+    Card_creditType getType() const override{
+        return Card_creditType::Card_premium;
+    }
+    double getcashback() const
+    {
+        return cashback;
+    }
+    void setcashback(const double &newcashback)
+    {
+        cashback = newcashback;
+    }
+    string showstatus() const override
+    {
+        return "Welcome to Wall Street!(Premium Cards)";
+    }
+    void afisare(ostream &os) const override
+    {
+        Card_credit::afisare(os);
+        cout << " You get a cashback of " << cashback << " on every purchase.\n";
+    }
+
+    friend ostream &operator<<(ostream &os, const Card_premium &card)
+    {
+        card.afisare(os);
+        return os;
+    }
+
+    void citire(istream &is) override
+    {
+        Card_credit::citire(is);
+        cout << "\nInsert your cashback: ";
+        is >> cashback;
+        cout << "\n";
+    }
+
+    friend istream  &operator>>(istream &is, Card_premium &card)
+    {
+        card.citire(is);
+        return is;
+    }
+
+    void Withdraw(const double &creditextras) override
+    {
+        Card_credit::Withdraw(creditextras);
+        double backinthepocket = getcredit() + creditextras * cashback;
+        setCredit(backinthepocket);
+    }
+
+    Card_premium() : Card_credit()
+    {
+        cashback = 0;
+    }
+    Card_premium(const Card_premium &card) : Card_credit(card.getCard(), card.getDet(), card.getExp(), card.getCVV(), card.getcredit()), cashback(card.cashback){}
+
+    Card_premium &operator=(const Card_premium &rhs)
+    {
+        if (this != &rhs)
+        {
+            Card_credit::operator=(rhs);
+            cashback = rhs.cashback;
+        }
+        return *this;
+    }
+};
+
+class Bank{
+    static vector<shared_ptr<Card_credit>> cards;
+    Bank() = delete;
+public:
+    static const vector<shared_ptr<Card_credit>> &getCards()
+    {
+        return cards;
+    }
+    static void addClient(const shared_ptr<Card_credit> &card)
+    {
+        cards.push_back(card);
+    }
+    static void printAllClients() {
+        for (auto &card: cards)
+            cout << card->getDet() << "\n";
+    }
+    static void printClient(const string& s)
+    {
+        for (auto &card: cards)
+            if(card->getCard() == s)
+            {
+                cout << card;
+                break;
+            }
+    }
+    static void printPremiumClients()
+    {
+        for (auto &card: cards)
+            if(card->getType() == Card_creditType::Card_premium)
+            {
+                auto cardpm = dynamic_pointer_cast<Card_premium>(card);
+                cout <<"Client Name: "<<cardpm->getDet() <<" Client Cashback: "<< cardpm->getcashback() << "\n";
+            }
+    }
+    static void printStandardClients()
+    {
+        for (auto &card: cards)
+            if(card->getType() == Card_creditType::Card_standard)
+            {
+                auto cardst = dynamic_pointer_cast<Card_standard>(card);
+                cout <<"Client Name: "<< cardst->getDet() <<" Client withdraw limit: "<<cardst->getlimitaExtragere() << " Client commission: " << cardst->getcomisionDepasireLimita() << "\n";
+            }
+    }
+    static void withdrawClient(const string& s, const double &sum)
+    {
+        for (auto &card: cards)
+            if(card->getCard() == s)
+            {
+                card->Withdraw(sum);
+                break;
+            }
+    }
+};
+
+vector <shared_ptr<Card_credit>> Bank::cards;
+
 int main()
 {
-    bool meniu=true;
-    char help[20];
-    while(meniu)
+    string s;
+    bool ok = true;
+    double money;
+    string comanda;
+    cout << "Welcome to the Bank! What would you like to do? If you need help, please type HELP. \n";
+    while(ok)
     {
-        cout<<"Introduceti o comanda:(Pentru a vedea lista de instructiuni, introducenti comanda Help)"<<"\n";
-        cin>>help;
-        if(strcmp("Help",help)==0)
+        getline(cin>>ws, comanda);
+        if(comanda == "HELP")
         {
-            cout<<"Postibile comenzi:"<<"\n";
-            cout<<"Multimizeaza: Introduceti numarul de elemente al unui vector si elementele acestuia, si se va afisa multimea formata din elementele vectorului"<<"\n";
-            cout<<"Reuneste: Introduceti numarul de elemente si elementele a doi vectori, si se va afisa multimea formata din elementele care apar in oricare dintre vectori"<<"\n";
-            cout<<"Intersecteaza: Introduceti numarul de elemente si elementele a doi vectori, si se va afisa multimea formata din elementele care apar in ambii vectori"<<"\n";
-            cout<<"Scade: Introduceti numarul de elemente si elementele a doi vectori, si se va afisa multimea formata din elementele care apar doar in primul vector"<<"\n";
-            cout<<"Exit: Opriti programul"<<"\n";
+            cout << "The following actions are possible:\n";
+            cout << "ADD A CARD. The previous command will make a new card!\n";
+            cout << "WITHDRAW. The previous command will withdraw money from a certain card!\n";
+            cout << "CARD INFO. The previous command will show all the card details!\n";
+            cout << "CLIENTS. The previous command will show all clients!\n";
+            cout << "PCLIENTS. The previous command will show all premium clients and their cashbacks!\n";
+            cout << "SCLIENTS. The previous command will show all standard clients and their withdraw limits and commissions!\n";
+            cout << "EXIT. The previous command will close the menu!\n";
         }else
-        if(strcmp("Multimizeaza",help)==0)
+        if(comanda == "ADD A CARD")
         {
-            Multime m(0,{});
-            cin>>m;
-            m.unicitate();
-            cout<<m<<"\n";
-        }else
-        if(strcmp("Reuneste",help)==0)
-        {
-            Multime m1(0,{}),m2(0,{});
-            cin>>m1>>m2;
-            m1=m1+m2;
-            cout<<m1<<"\n";
-        }else
-        if(strcmp("Intersecteaza",help)==0)
-        {
-            Multime m1(0,{}),m2(0,{});
-            cin>>m1>>m2;
-            m1=m1*m2;
-            cout<<m1<<"\n";
-        }else
-        if(strcmp("Scade",help)==0)
-        {
-            Multime m1(0,{}),m2(0,{});
-            cin>>m1>>m2;
-            m1=m1-m2;
-            cout<<m1<<"\n";
-        }else
-        if(strcmp("Exit",help)==0)
-        {
-            meniu=false;
-            cout<<"Programul a fost oprit";
-        }else
-        {
-            cout<<"Comanda necunoscuta"<<"\n";
+            cout << "Select a card type: PREMIUM/ STANDARD\n";
+            cin >> comanda;
+            if(comanda == "PREMIUM")
+            {
+                Card_premium card;
+                cin >> card;
+                auto add = make_shared<Card_premium>(card);
+                Bank::addClient(add);
+            }
+            else
+            if(comanda == "STANDARD")
+            {
+                Card_standard card;
+                cin >> card;
+                auto add = make_shared<Card_standard>(card);
+                Bank::addClient(add);
+            }
         }
+        else
+        if (comanda == "CARD INFO")
+        {
+            cout << "Insert your card number: ";
+            cin >> s;
+            Bank::printClient(s);
+        }
+        else
+        if (comanda == "WITHDRAW")
+        {
+            cout << "\nInsert your card number: ";
+            cin >> s;
+            cout << "\nInsert the amount you want to extract: ";
+            cin >> money;
+            Bank::withdrawClient(s,money);
+        }
+        else
+            if(comanda == "CLIENTS")
+            {
+                Bank::printAllClients();
+            }
+            else
+                if(comanda == "PCLIENTS")
+                {
+                    Bank::printPremiumClients();
+                }
+                else
+                    if(comanda == "SCLIENTS")
+                    {
+                        Bank::printStandardClients();
+                    }
+        if(comanda == "EXIT")
+            ok = false;
+        else
+            cout << "What else can we do for you?\n";
     }
     return 0;
 }
